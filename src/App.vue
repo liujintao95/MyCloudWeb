@@ -1,58 +1,104 @@
 <template>
-  <div id="app">
-    <TopMenu class="tMenu"></TopMenu>
-    <LeftMenu class="lMenu"></LeftMenu>
+  <div 
+    id="app" 
+    v-loading.fullscreen.lock="loading2"
+    :element-loading-text="msg"
+    element-loading-spinner="el-icon-loading"
+    element-loading-background="rgba(0, 0, 0, 0.8)">
+    <div class="header">
+      
+    </div>
+    <Navigation v-if="isRouterAlive"></Navigation>
+    <router-view @loadchange="loadchange" v-if="isRouterAlive"/>
   </div>
 </template>
 
 <script>
-import TopMenu from './components/TopMenu.vue'
-import LeftMenu from './components/LeftMenu.vue'
-
+import Navigation from './components/Navigation.vue'
 export default {
   name: 'app',
-  components: {
-    TopMenu,
-    LeftMenu
+  provide () {
+    return {
+      reload: this.reload
+    }
+  },
+  data () {
+    return {
+      display:"display:none",
+      isRouterAlive: true,
+      loading2:false,
+      msg:""
+    }
+  },
+  methods: {
+    reload () {
+      this.isRouterAlive = false
+      this.$nextTick(function () {
+        this.isRouterAlive = true
+      })
+    },
+    out_block(){
+      this.display="display:block"
+    },
+    out_none(){
+      this.display="display:none"
+    },
+    loadchange(msg){
+      if (this.loading2 == false) {
+        this.msg = msg
+        this.loading2 = true;
+      } else {
+        this.loading2 = false;
+        this.msg = ""
+      }
+    },
+  },
+  components:{
+    Navigation,
   }
 }
 </script>
 
 <style>
-html,body,#app{
+html, body, #app{
   height: 100%;
-  width: 100%;
 }
-body,ol,ul,h1,h2,h3,h4,h5,h6,p,th,td,dl,dd,dt,form,fieldset,legend,input,textarea,select{margin:0;padding:0}
-a{text-decoration:none}
-em{font-style:normal}
-li{list-style:none}
-img{border:0;vertical-align:middle}
-table{border-collapse:collapse;border-spacing:0}
-p{word-wrap:break-word}
-.ind{text-indent:2em}
-.ind10{text-indent:10px;}
-.noborder{border:0;}
-.left{float:left;}
-.right{float:right;}
-.clearBoth{clear:both;}
-.font12{font-size:12px;}
+body,button, input, select, textarea,h1 ,h2, h3, h4, h5, h6 {
+  font-family: Microsoft YaHei,'宋体' , Tahoma, Helvetica, Arial, "\5b8b\4f53", sans-serif;
+}
+.fl,.l{
+  float: left;
+}
+.fr,.r{
+  float: right;
+}
+.hide{
+  display: none;
+}
+a{
+  text-decoration: none;
+}
+li{
+list-style-type:none;
+}
+.shadow{
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0.6;
+  background-color: black;
+  z-index: 9;
+}
+body {
+  padding: 0;
+  margin: 0;
+  background-color: #FFFFFF;
+}
+.header{
+  height: 9.5%;
+  background-color: rgb(83, 110, 131)
+}
 
-
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color: #2c3e50;
-  padding:0px;
-}
-.lMenu {
-  display: inline-block;
-  height: calc(100% - 42px);
-  width: 15%;
-}
-.tMenu {
-  height: 38px;
-  width: 100%;
-}
 </style>

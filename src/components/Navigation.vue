@@ -10,6 +10,10 @@
                     <i class="el-icon-edit"></i>
                     <span slot="title">私人文件</span>
                 </el-menu-item>
+                <el-menu-item index="/upload">
+                    <i class="el-icon-edit"></i>
+                    <span slot="title">上传列表</span>
+                </el-menu-item>
                 <el-menu-item index="/admin">
                     <i class="el-icon-setting"></i>
                     <span slot="title">个人设置</span>
@@ -24,7 +28,7 @@ export default {
     name:'Navigation',
     data() {
         return {
-        activeindex:"/index",
+        activeindex:"/public",
         flag:false,
         flag2:false,
         }
@@ -33,16 +37,16 @@ export default {
 
     },
     mounted() {
-        if(location.href.indexOf("/EQ/index")!=-1){
-            this.activeindex="/index";
+        if(location.href.indexOf("/public")!=-1){
+            this.activeindex="/public";
         }
-        else if(location.href.indexOf("/EQ/assess")!=-1){
-            this.activeindex="/assess";
+        else if(location.href.indexOf("/private")!=-1){
+            this.activeindex="/private";
         }
-        else if(location.href.indexOf("/EQ/backstage")!=-1){
-            this.activeindex="/backstage";
+        else if(location.href.indexOf("/upload")!=-1){
+            this.activeindex="/upload";
         }
-        else if(location.href.indexOf("/EQ/admin")!=-1){
+        else if(location.href.indexOf("/admin")!=-1){
             this.activeindex="/admin";
         }
     },

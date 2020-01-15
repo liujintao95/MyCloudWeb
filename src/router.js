@@ -34,6 +34,15 @@ export default new Router({
             }
         },
         {
+            path: "/upload",
+            name: "upload",
+            component: () =>
+                import(/* webpackChunkName: "about" */ "./views/Upload.vue"),
+            meta: {
+                title: '云盘'
+            }
+        },
+        {
             path: "/admin",
             name: "admin",
             component: () =>

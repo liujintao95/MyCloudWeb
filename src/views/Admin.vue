@@ -200,7 +200,7 @@ export default {
     height: 48px;
     color: #7e8b9c;
     text-align: right;
-    font-weight:normal;
+    font-weight: normal;
 }
 .user_msg td{
     min-width: 150px;

@@ -1,6 +1,7 @@
 <template>
     <div class="upload">
         <div class="divButton">
+            <input type="file" name="fileList" multiple directory mozdirectory webkitdirectory @change="UploadInit($event)" ref="file">
             <el-button class="uploadButton" type="primary" icon="el-icon-upload">上传文件</el-button>
         </div>
         <div>
@@ -44,6 +45,7 @@
 </template>
 
 <script>
+import CryptoJS from 'crypto-js'
 export default {
     name: 'upload',
     data () {
@@ -77,7 +79,50 @@ export default {
     },
     inject:["reload"],
     methods:{
-    
+        UploadInit(event){
+            if (!event.target.files[0].size) return
+            for(var i=0; i<event.target.files.length; i++){
+                var reader = new FileReader()
+                var data = {
+                    "fileName" : event.target.files[i].name,
+                    "size" : event.target.files[i].size,
+                }
+                reader.readAsArrayBuffer(event.target.files[i])
+                reader.onload = function () {
+                    var wordArray = CryptoJS.lib.WordArray.create(reader.result)
+                    // eslint-disable-next-line no-unused-vars
+                    data["hash"] = CryptoJS.SHA256(wordArray).toString()
+                    // eslint-disable-next-line no-console
+                    console.log(data)
+                    
+                    // if event.target.files[i].size
+                    // this.$axios.post(
+                    //     this.$store.state.url_prefix+"/block/init",
+                    //     this.$qs.stringify(data)
+                    // ).then((response) => {
+                    //     if("ok"==response.data.errmsg){
+                    //         this.$alert('点击确定进行跳转', '注册成功！', {
+                    //             confirmButtonText: '确定',
+                    //             callback: this.$router.push({name: 'private'})
+                    //         });
+                    //         return;
+                    //     }
+                    //     else{
+                    //         this.$alert(response.data.errmsg, '注册失败！', {
+                    //             confirmButtonText: '确定',
+                    //             callback: this.$router.push({name: 'register'})
+                    //         });
+                    //         return;
+                    //     }
+                    // }).catch(error => {
+                    //     this.$message({
+                    //         message: error.response.data.errmsg,
+                    //         type: 'error'
+                    //     });
+                    // });
+                };
+            }
+        }
     }
 }
 </script>

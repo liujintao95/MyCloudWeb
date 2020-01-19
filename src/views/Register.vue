@@ -55,7 +55,7 @@ export default {
                 pwd:this.pwd,
                 rpwd:this.rpwd
             }
-            this.$axios.post(
+            this.axios.post(
                 this.$store.state.url_prefix+"/register",
                 this.$qs.stringify(data)
             ).then((response) => {

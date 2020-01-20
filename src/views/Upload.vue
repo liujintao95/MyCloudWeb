@@ -55,6 +55,56 @@ export default {
     },
     inject:["reload"],
     methods:{
+        async CreateUpload(data){
+            let res
+            await this.axios.post(
+                this.$store.state.url_prefix+"/auth/file/rapid_upload",
+                this.$qs.stringify({hash: data.hash})
+            ).then(async (response) => {
+                if("ok"==response.data.errmsg){
+                    if(!response.data.data){
+                        if(data.size <= 5 * 1024 *1024){
+                            await this.axios.post(
+                                this.$store.state.url_prefix+"/auth/file/init",
+                                this.$qs.stringify(data)
+                            ).then((response) => {
+                                res = response.data.errmsg
+                            }).catch(error => {
+                                res = error.response.data.errmsg
+                            })
+                        } else {
+                            await this.axios.post(
+                                this.$store.state.url_prefix+"/auth/block/init",
+                                this.$qs.stringify(data)
+                            ).then((response) => {
+                                res = response.data.errmsg
+                            }).catch(error => {
+                                res = error.response.data.errmsg
+                            })
+                        }
+                    } else{
+                        res = "ok"
+                    }
+                } else {
+                    res = response.data.errmsg
+                }
+            }).catch(error => {
+                res = error.response.data.errmsg
+            })
+            return res
+        },
+        async CreateDir(dirList){
+            let res
+            await this.axios.post(
+                this.$store.state.url_prefix+"/auth/dir/save",
+                this.$qs.stringify({dirList: dirList})
+            ).then((response) => {
+                res = response.data.errmsg
+            }).catch(error => {
+                res = error.response.data.errmsg
+            })
+            return res
+        },
         CreateInit(file){
             var _this = this
             var reader = new FileReader()
@@ -66,77 +116,46 @@ export default {
                     fileName : file.name,
                     size : file.size,
                 }
-
-                _this.axios.post(
-                    _this.$store.state.url_prefix+"/auth/file/rapid_upload",
-                    _this.$qs.stringify({hash: data.hash})
-                ).then((response) => {
-                    if("ok"==response.data.errmsg){
-                        if(response.data.data){
-                            _this.$message({
-                                message: "上传成功！",
-                                type: 'success'
-                            });
-                        } else {
-                            if(file.size <= 5 * 1024 *1024){
-                                _this.axios.post(
-                                    _this.$store.state.url_prefix+"/auth/file/init",
-                                    _this.$qs.stringify(data)
-                                ).then((response) => {
-                                    if("ok"==response.data.errmsg){
-                                        _this.$message({
-                                            message: "上传成功！",
-                                            type: 'success'
-                                        });
-                                    } else {
-                                        _this.$message({
-                                            message: response.data.errmsg,
-                                            type: 'error'
-                                        })
-                                    }
-                                }).catch(error => {
-                                    _this.$message({
-                                        message: error.response.data.errmsg,
-                                        type: 'error'
-                                    })
-                                })
+                _this.CreateUpload(data).then((response) => {
+                    if (response == "ok"){
+                        var filePath = file.webkitRelativePath
+                        var pathList = filePath.split("/")
+                        var dirList = Array()
+                        for(var i=0; i<pathList.length; i++) {
+                            if(i==0){
+                                dirList.push(
+                                    "/|" + pathList[i] + "|"
+                                )
+                            } else if(i + 1 == pathList.length){
+                                dirList.push(
+                                    pathList.slice(0,i-1).join('/') + "|" + pathList[i] + "|" + data.hash
+                                )
                             } else {
-                                _this.axios.post(
-                                    _this.$store.state.url_prefix+"/auth/block/init",
-                                    _this.$qs.stringify(data)
-                                ).then((response) => {
-                                    if("ok"==response.data.errmsg){
-                                        _this.$message({
-                                            message: "上传成功！",
-                                            type: 'success'
-                                        })
-                                    } else {
-                                        _this.$message({
-                                            message: response.data.errmsg,
-                                            type: 'error'
-                                        })
-                                    }
-                                }).catch(error => {
-                                    _this.$message({
-                                        message: error.response.data.errmsg,
-                                        type: 'error'
-                                    })
-                                })
+                                dirList.push(
+                                    pathList.slice(0,i-1).join('/') + "|" + pathList[i] + "|"
+                                )
                             }
                         }
-                        
+                        _this.CreateDir(dirList).then((response) => {
+                            if(response == "ok"){
+                                _this.$message({
+                                    message: data.filePath+"上传成功！",
+                                    type: 'success'
+                                })
+                            } else {
+                                _this.$message({
+                                    message: response,
+                                    type: 'error'
+                                })
+                            }
+                        })
                     } else {
                         _this.$message({
-                            message: response.data.errmsg,
+                            message: response,
                             type: 'error'
                         })
                     }
-                }).catch(error => {
-                    _this.$message({
-                        message: error.response.data.errmsg,
-                        type: 'error'
-                    })
-                })    
+                })
             }
         },
         IteratesDir(event){

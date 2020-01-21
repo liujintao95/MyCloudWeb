@@ -41,6 +41,17 @@
                 </el-table>
             </template>
         </div>
+        <div style="height:78px">
+            <el-pagination
+                style="margin-left: 43%; margin-top: 28px;"
+                background
+                layout="prev, pager, next"
+                :current-page.sync="currentPage"
+                @current-change="CurrentPageChange"
+                :total="totalData"
+                :page-size="10">
+            </el-pagination>
+        </div>
     </div>
 </template>
 
@@ -50,7 +61,9 @@ export default {
     name: 'upload',
     data () {
         return {
-            tableData: []
+            tableData: [],
+            currentPage: 1,
+            totalData: NaN
         }
     },
     inject:["reload"],
@@ -97,7 +110,7 @@ export default {
             let res
             await this.axios.post(
                 this.$store.state.url_prefix+"/auth/dir/save",
-                this.$qs.stringify({dirList: dirList})
+                this.$qs.stringify({dirList: dirList.join("|**|")})
             ).then((response) => {
                 res = response.data.errmsg
             }).catch(error => {
@@ -124,15 +137,15 @@ export default {
                         for(var i=0; i<pathList.length; i++) {
                             if(i==0){
                                 dirList.push(
-                                    "/|" + pathList[i] + "|"
+                                    "|*|" + pathList[i] + "|*|NULL"
                                 )
                             } else if(i + 1 == pathList.length){
                                 dirList.push(
-                                    pathList.slice(0,i-1).join('/') + "|" + pathList[i] + "|" + data.hash
+                                    pathList.slice(0,i).join('/') + "|*|" + pathList[i] + "|*|" + data.hash
                                 )
                             } else {
                                 dirList.push(
-                                    pathList.slice(0,i-1).join('/') + "|" + pathList[i] + "|"
+                                    pathList.slice(0,i).join('/') + "|*|" + pathList[i] + "|*|NULL"
                                 )
                             }
                         }
@@ -163,13 +176,18 @@ export default {
             for(var i=0; i<event.target.files.length; i++){
                 this.CreateInit(event.target.files[i])
             }
+            this.UploadShow()
         },
         UploadShow(){
             this.axios.get(
-                this.$store.state.url_prefix+"/auth/file/upload_show"
+                this.$store.state.url_prefix+"/auth/file/upload_show",
+                {
+                    params:{page: this.currentPage}
+                }
             ).then((response) => {
                 if("ok"==response.data.errmsg){
                     this.tableData = response.data.data
+                    this.totalData = response.data.count
                 }
                 else{
                     this.tableData = []
@@ -180,6 +198,10 @@ export default {
                     type: 'error'
                 });
             });
+        },
+        CurrentPageChange(page){
+            this.currentPage = page;
+            this.UploadShow()
         }
     },
     mounted() {

@@ -110,7 +110,7 @@ export default {
             let res
             await this.axios.post(
                 this.$store.state.url_prefix+"/auth/dir/save",
-                this.$qs.stringify({dirList: dirList.join("|**|")})
+                this.$qs.stringify({dirList: JSON.stringify(dirList)})
             ).then((response) => {
                 res = response.data.errmsg
             }).catch(error => {
@@ -123,7 +123,7 @@ export default {
             var reader = new FileReader()
             reader.readAsArrayBuffer(file)
             reader.onload = function () {
-                var wordArray = CryptoJS.lib.WordArray.create(reader.result)
+                var wordArray = CryptoJS.lib.WordArray.create(reader.result.slice(0,2000))
                 var data = {
                     hash : CryptoJS.SHA256(wordArray).toString(),
                     fileName : file.name,
@@ -133,20 +133,24 @@ export default {
                     if (response == "ok"){
                         var filePath = file.webkitRelativePath
                         var pathList = filePath.split("/")
-                        var dirList = Array()
+                        var dirList = new Array()
                         for(var i=0; i<pathList.length; i++) {
+                            var dirObj = new Object()
                             if(i==0){
-                                dirList.push(
-                                    "|*|" + pathList[i] + "|*|NULL"
-                                )
+                                dirObj.curDir = ""
+                                dirObj.fileName = pathList[i]
+                                dirObj.fileHash = ""
+                                dirList.push(dirObj)
                             } else if(i + 1 == pathList.length){
-                                dirList.push(
-                                    pathList.slice(0,i).join('/') + "|*|" + pathList[i] + "|*|" + data.hash
-                                )
+                                dirObj.curDir = pathList.slice(0,i).join('/')
+                                dirObj.fileName = pathList[i]
+                                dirObj.fileHash = data.hash
+                                dirList.push(dirObj)
                             } else {
-                                dirList.push(
-                                    pathList.slice(0,i).join('/') + "|*|" + pathList[i] + "|*|NULL"
-                                )
+                                dirObj.curDir = pathList.slice(0,i).join('/')
+                                dirObj.fileName = pathList[i]
+                                dirObj.fileHash = ""
+                                dirList.push(dirObj)
                             }
                         }
                         _this.CreateDir(dirList).then((response) => {
